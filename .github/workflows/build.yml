@@ -37,12 +37,12 @@ jobs:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
-
+      
       - name: Install SonarScanner for .NET
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         run: |
           dotnet tool install --global dotnet-sonarscanner --version 5.3.1
-
+          
       - name: Verify dotnet sonarscanner installation
         run: dotnet sonarscanner --version
 
