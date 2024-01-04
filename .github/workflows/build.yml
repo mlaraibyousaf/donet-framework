@@ -1,49 +1,53 @@
-name: Build and Analyze
-
+name: SonarCloud
 on:
   push:
     branches:
-      - main
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    name: Build and analyze
+    runs-on: windows-latest
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: '3.x'
-
-    - name: Restore NuGet Packages
-      run: dotnet restore
-
-    - name: Build Solution
-      run: dotnet build --configuration Release
-
-  sonarcloud:
-    runs-on: ubuntu-latest
-
-    needs: build
-
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: '3.x'
-
-    - name: SonarCloud Scan
-      run: |
-        dotnet tool install --global dotnet-sonarscanner
-        dotnet sonarscanner begin /k:"mlaraibyousaf_simpleframeworkapp" /o:"mlaraibyousaf" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="c42034e4a2279daf7810db9c7e07ef1a5b3335a6"
-        dotnet build --configuration Release
-        dotnet sonarscanner end /d:sonar.login="c42034e4a2279daf7810db9c7e07ef1a5b3335a6"
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'zulu'
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v3
+        with:
+          path: .\.sonar\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          New-Item -Path .\.sonar\scanner -ItemType Directory
+          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: c42034e4a2279daf7810db9c7e07ef1a5b3335a6
+        shell: powershell
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"mlaraibyousaf_simpleframeworkapp" /o:"mlaraibyousaf" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          nuget restore SimpleFrameworkApp.sln
+          msbuild SimpleFrameworkApp.sln /p:Configuration=Release
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="c42034e4a2279daf7810db9c7e07ef1a5b3335a6"
 
 
 
@@ -63,17 +67,17 @@ jobs:
 #     steps:
 #     - uses: actions/checkout@v2
     
-#     - name: Setup MSBuild path
-#       uses: microsoft/setup-msbuild@v1.3.1
+    # - name: Setup MSBuild path
+    #   uses: microsoft/setup-msbuild@v1.3.1
     
-#     - name: Setup NuGet.exe for use with actions
-#       uses: NuGet/setup-nuget@v1.2.0          
+    # - name: Setup NuGet.exe for use with actions
+    #   uses: NuGet/setup-nuget@v1.2.0          
     
-#     - name: Restore NuGet packages
-#       run: nuget restore SimpleFrameworkApp.sln
+    # - name: Restore NuGet packages
+    #   run: nuget restore SimpleFrameworkApp.sln
 
-#     - name: Build
-#       run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release
+    # - name: Build
+    #   run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release
 
-#     - name: Publish to folder
-#       run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
+    # - name: Publish to folder
+    #   run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
