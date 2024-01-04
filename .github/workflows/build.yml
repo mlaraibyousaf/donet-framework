@@ -38,14 +38,30 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - uses: actions/checkout@v2
+
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.3.1
+      
+      - name: Setup NuGet.exe for use with actions
+        uses: NuGet/setup-nuget@v1.2.0          
+        
+      - name: Restore NuGet packages
+        run: nuget restore SimpleFrameworkApp.sln
+      
+      - name: Build
+        run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release
+      
+      - name: Publish to folder
+        run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
+      
       - name: Build and analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: c42034e4a2279daf7810db9c7e07ef1a5b3335a6
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"mlaraibyousaf_simpleframeworkapp" /o:"mlaraibyousaf" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-          nuget restore SimpleFrameworkApp.sln
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"mlaraibyousaf_simpleframeworkapp" /o:"mlaraibyousaf" /d:sonar.token="c42034e4a2279daf7810db9c7e07ef1a5b3335a6" /d:sonar.host.url="https://sonarcloud.io"
           msbuild SimpleFrameworkApp.sln /p:Configuration=Release
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="c42034e4a2279daf7810db9c7e07ef1a5b3335a6"
 
@@ -67,17 +83,17 @@ jobs:
 #     steps:
 #     - uses: actions/checkout@v2
     
-    # - name: Setup MSBuild path
-    #   uses: microsoft/setup-msbuild@v1.3.1
+#     - name: Setup MSBuild path
+#       uses: microsoft/setup-msbuild@v1.3.1
     
-    # - name: Setup NuGet.exe for use with actions
-    #   uses: NuGet/setup-nuget@v1.2.0          
+#     - name: Setup NuGet.exe for use with actions
+#       uses: NuGet/setup-nuget@v1.2.0          
     
-    # - name: Restore NuGet packages
-    #   run: nuget restore SimpleFrameworkApp.sln
+#     - name: Restore NuGet packages
+#       run: nuget restore SimpleFrameworkApp.sln
 
-    # - name: Build
-    #   run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release
+#     - name: Build
+#       run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release
 
-    # - name: Publish to folder
-    #   run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
+#     - name: Publish to folder
+#       run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
