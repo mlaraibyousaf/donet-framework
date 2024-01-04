@@ -63,12 +63,13 @@ jobs:
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: c42034e4a2279daf7810db9c7e07ef1a5b3335a6  # Replace with your actual Sonar token
+          SONAR_TOKEN: c42034e4a2279daf7810db9c7e07ef1a5b3335a6
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner.ps1 begin /k:"mlaraibyousaf_simpleframeworkapp" /o:"mlaraibyousaf" /d:sonar.token="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
           msbuild SimpleFrameworkApp.sln /p:Configuration=Release
           .\.sonar\scanner\dotnet-sonarscanner.ps1 end /d:sonar.token="${{ env.SONAR_TOKEN }}"
+
   
 
 
