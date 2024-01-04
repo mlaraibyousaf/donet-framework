@@ -44,13 +44,11 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"mlaraibyousaf_simpleframeworkapp" /o:"mlaraibyousaf" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-            microsoft/setup-msbuild@v1.3.1
-            NuGet/setup-nuget@v1.2.0   
-            nuget restore SimpleFrameworkApp.sln
-            msbuild SimpleFrameworkApp.sln /p:Configuration=Release
-            msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
-
-
+          microsoft/setup-msbuild@v1.3.1
+          NuGet/setup-nuget@v1.2.0   
+          nuget restore SimpleFrameworkApp.sln
+          msbuild SimpleFrameworkApp.sln /p:Configuration=Release
+          msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
 
