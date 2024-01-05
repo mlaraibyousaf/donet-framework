@@ -60,5 +60,5 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"mlaraibyousaf_donet-framework" /o:"mlaraibyousaf" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-          ./msbuild SimpleFrameworkApp.sln /p:Configuration=Release
+          msbuild SimpleFrameworkApp.sln /p:Configuration=Release
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
