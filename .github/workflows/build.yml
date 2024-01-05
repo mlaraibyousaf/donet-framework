@@ -1,87 +1,27 @@
-name: SonarCloud
+name: Build
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
 
 jobs:
   build:
-    name: Build and analyze
+    name: Build
     runs-on: windows-latest
     steps:
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'zulu'
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~\sonar\cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache SonarCloud scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v3
-        with:
-          path: .\.sonar\scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
-      - name: Install SonarCloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        run: |
-          dotnet tool install --global dotnet-sonarscanner --version 5.3.1
-      - uses: actions/checkout@v2
-      - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v1.3.1
-      - name: Setup NuGet.exe for use with actions
-        uses: NuGet/setup-nuget@v1.2.0
-      - name: Restore NuGet packages
-        run: nuget restore SimpleFrameworkApp.sln
-      - name: Build
-        run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release
-      - name: Publish to folder
-        run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: c42034e4a2279daf7810db9c7e07ef1a5b3335a6
-          DOTNET_ROOT: ${{ env.USERPROFILE }}\.dotnet
-        run: |
-          dotnet sonarscanner begin /k:"mlaraibyousaf_simpleframeworkapp" /o:"mlaraibyousaf" /d:sonar.token="c42034e4a2279daf7810db9c7e07ef1a5b3335a6" /d:sonar.host.url="https://sonarcloud.io"
-          msbuild SimpleFrameworkApp.sln /p:Configuration=Release
-          dotnet sonarscanner end /d:sonar.token="c42034e4a2279daf7810db9c7e07ef1a5b3335a6"
-
-# name: Build
-
-# on:
-#   workflow_dispatch:
-
-
-# jobs:
-#   build:
-#     name: Build
-#     runs-on: windows-latest
-#     steps:
-#     - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
     
-#     - name: Setup MSBuild path
-#       uses: microsoft/setup-msbuild@v1.3.1
+    - name: Setup MSBuild path
+      uses: microsoft/setup-msbuild@v1.3.1
     
-#     - name: Setup NuGet.exe for use with actions
-#       uses: NuGet/setup-nuget@v1.2.0          
+    - name: Setup NuGet.exe for use with actions
+      uses: NuGet/setup-nuget@v1.2.0          
     
-#     - name: Restore NuGet packages
-#       run: nuget restore SimpleFrameworkApp.sln
+    - name: Restore NuGet packages
+      run: nuget restore SimpleFrameworkApp.sln
 
-#     - name: Build
-#       run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release
+    - name: Build
+      run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release
 
-#     - name: Publish to folder
-#       run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
+    - name: Publish to folder
+      run: msbuild SimpleFrameworkApp.sln /p:Configuration=Release /p:DeployOnBuild=true /t:WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl='published' /p:PackageAsSingleFile=false
