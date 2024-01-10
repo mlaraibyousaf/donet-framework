@@ -1,1 +1,47 @@
 
+name: SonarCloud
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  build:
+    name: Build and analyze
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install SonarCloud scanner
+        shell: powershell
+        run: |
+           $SONAR_TOKEN = "c42034e4a2279daf7810db9c7e07ef1a5b3335a6"
+           $ORGANIZATION = "mlaraibyousaf"
+           $VISIBILITY = "public"
+           $NEW_CODE_DEFINITION_TYPE = "days"
+           $NEW_CODE_DEFINITION_VALUE = "30"
+           
+           # Arrays of project names and keys
+           $PROJECTS = @("test-react", "test-sonar", "test-go")
+           $PROJECT_KEYS = @("test-react-key", "test-sonar-key", "test-go-key")
+           
+           for ($i = 0; $i -lt $PROJECTS.Length; $i++) {
+               $PROJECT_NAME = $PROJECTS[$i]
+               $PROJECT_KEY = $PROJECT_KEYS[$i]
+           
+               $url = "https://sonarcloud.io/api/projects/create"
+               $queryParameters = @{
+                   organization = $ORGANIZATION
+                   project = $PROJECT_KEY
+                   name = $PROJECT_NAME
+                   newCodeDefinitionType = $NEW_CODE_DEFINITION_TYPE
+                   newCodeDefinitionValue = $NEW_CODE_DEFINITION_VALUE
+                   visibility = $VISIBILITY
+               }
+           
+              $response = Invoke-RestMethod -Method Post -Uri $url -Authentication Basic -Token $SONAR_TOKEN -Body $queryParameters
+              Write-Output $response
+           }
+              
