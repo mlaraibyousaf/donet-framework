@@ -1,9 +1,9 @@
-name: SonarCloud
+name: SonarCloud-powershell
 on:
   workflow_dispatch:
 jobs:
   build:
-    name: Build and analyze
+    name: Build and analyze - powershell
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
